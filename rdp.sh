@@ -13,9 +13,6 @@ Pin="123456"
 # Set default Autostart value
 Autostart=true
 
-echo "Downloading Ubuntu 24.04.2 LTS Desktop ISO"
-wget https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-
 echo "Creating User and Setting it up"
 sudo useradd -m "$username"
 sudo adduser "$username" sudo
@@ -23,9 +20,10 @@ echo "$username:$password" | sudo chpasswd
 sudo sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd
 echo "User created and configured with username '$username' and password '$password'"
 
-echo "Installing necessary packages"
+echo "Installing necessary packages and the full Ubuntu Desktop"
+export DEBIAN_FRONTEND=noninteractive
 sudo apt update
-sudo apt install -y xfce4 desktop-base xfce4-terminal tightvncserver wget
+sudo apt install --assume-yes ubuntu-desktop wget
 
 echo "Setting up Chrome Remote Desktop"
 echo "Installing Chrome Remote Desktop"
@@ -33,13 +31,8 @@ wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
 sudo dpkg --install chrome-remote-desktop_current_amd64.deb
 sudo apt install --assume-yes --fix-broken
 
-echo "Installing Desktop Environment"
-export DEBIAN_FRONTEND=noninteractive
-sudo apt install --assume-yes xfce4 desktop-base xfce4-terminal
-echo "exec /etc/X11/Xsession /usr/bin/xfce4-session" | sudo tee /etc/chrome-remote-desktop-session
-sudo apt remove --assume-yes gnome-terminal
-sudo apt install --assume-yes xscreensaver
-sudo systemctl disable lightdm.service
+echo "Configuring Chrome Remote Desktop for Ubuntu's GNOME session"
+echo "exec /usr/sbin/lightdm-session 'gnome-session --session=ubuntu'" | sudo tee /etc/chrome-remote-desktop-session
 
 echo "Installing Google Chrome"
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
